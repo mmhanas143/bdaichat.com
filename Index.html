@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"> <!-- Default language set to English -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat App</title>
+    <!-- Tailwind CSS লোড করার জন্য -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS কনফিগারেশন: ডার্ক মোড এবং কাস্টম ফন্ট -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // 'class' মোড ব্যবহার করে ডার্ক মোড টগল করা হবে
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        hindSiliguri: ['Hind Siliguri', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <!-- Google Fonts (Inter and Hind Siliguri) ব্যবহারের জন্য -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS ফাইল লিংক করা -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen text-gray-900 dark:text-gray-100">
+
+    <div class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col h-[90vh] my-4 transition-colors duration-300">
+        <!-- হেডার -->
+        <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 rounded-t-2xl shadow-md flex justify-between items-center relative">
+            <h1 id="appTitle" class="text-xl md:text-2xl font-bold text-center flex-grow" data-lang-key="appTitle">Chat with Gemini</h1>
+            <!-- সেটিংস মেনু (থ্রি ডট আইকন) -->
+            <div class="relative">
+                <button id="settingsButton" class="p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                </button>
+                <!-- ড্রপডাউন মেনু -->
+                <div id="settingsMenu" class="dropdown-menu hidden bg-white dark:bg-gray-700 rounded-lg shadow-lg py-2 mt-2 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 font-semibold" data-lang-key="themeLabel">Theme</div>
+                    <a href="#" id="lightTheme" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="lightTheme">Light</a>
+                    <a href="#" id="darkTheme" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="darkTheme">Dark</a>
+                    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 font-semibold" data-lang-key="languageLabel">Language</div>
+                    <a href="#" id="langBn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="langBn">Bengali</a>
+                    <a href="#" id="langEn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="langEn">English</a>
+                    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                    <a href="#" id="aboutOption" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="aboutOption">About</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- চ্যাটবক্স (যেখানে মেসেজ দেখা যাবে) -->
+        <main id="chatbox" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+            <!-- প্রাথমিক বার্তা -->
+            <div class="flex justify-start">
+                <div class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-xl max-w-lg" id="initialMessage">
+                    <p data-lang-key="initialMessage">Hello! I am Gemini. You can ask me anything.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- লোডিং ইন্ডিকেটর (লুকানো থাকবে) -->
+        <div id="loading-indicator" class="hidden p-4 flex items-center justify-start">
+            <div class="bg-gray-200 dark:bg-gray-700 p-3 rounded-xl flex items-center space-x-2">
+                <div class="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-pulse"></div>
+                <div class="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                <div class="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+            </div>
+        </div>
+
+        <!-- মেসেজ ইনপুট এবং সেন্ড বাটন -->
+        <footer class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-2xl transition-colors duration-300">
+            <div class="flex items-center space-x-2">
+                <input type="text" id="userInput" class="flex-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition" placeholder="Type your message here..." data-lang-key="inputPlaceholder">
+                <button id="sendButton" class="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 active:scale-95 transition-transform flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center relative">
+            <button id="closeAboutModal" class="absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100" data-lang-key="aboutTitle">About</h2>
+            <p class="text-gray-700 dark:text-gray-300">Design by MMH ANAS</p>
+            <p class="text-gray-700 dark:text-gray-300">Version 1.0.1</p>
+            <p class="text-gray-700 dark:text-gray-300">Gemini version 2.0 Flash</p>
+        </div>
+    </div>
+
+    <!-- External JavaScript ফাইল লিংক করা -->
+    <script src="script.js"></script>
+</body>
+</html>
+
