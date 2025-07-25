@@ -1,0 +1,44 @@
+/* বেস ফন্ট এবং ব্যাকগ্রাউন্ড সেট করার জন্য */
+body {
+    font-family: 'Hind Siliguri', 'Inter', sans-serif;
+    transition: background-color 0.3s ease; /* থিম পরিবর্তনের জন্য স্মুথ ট্রানজিশন */
+}
+/* ডার্ক মোডের জন্য বডি স্টাইল */
+.dark body {
+    background-color: #1a202c; /* ডার্ক ব্যাকগ্রাউন্ড */
+    color: #e2e8f0; /* ডার্ক টেক্সট কালার */
+}
+/* স্ক্রলবার স্টাইল করার জন্য */
+#chatbox::-webkit-scrollbar {
+    width: 6px;
+}
+#chatbox::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+.dark #chatbox::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+#chatbox::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 6px;
+}
+.dark #chatbox::-webkit-scrollbar-thumb {
+    background: #4a5568;
+}
+#chatbox::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+.dark #chatbox::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* কাস্টম ড্রপডাউন মেনুর জন্য স্টাইল */
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%; /* হেডার এর নিচে দেখানোর জন্য */
+    z-index: 1000;
+    min-width: 12rem;
+}
+
