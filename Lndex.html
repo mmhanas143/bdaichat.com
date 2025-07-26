@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en"> <!-- Default language set to English -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat App</title>
+    <!-- Tailwind CSS লোড করার জন্য -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS কনফিগারেশন: ডার্ক মোড এবং কাস্টম ফন্ট -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // 'class' মোড ব্যবহার করে ডার্ক মোড টগল করা হবে
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        hindSiliguri: ['Hind Siliguri', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <!-- Google Fonts (Inter and Hind Siliguri) ব্যবহারের জন্য -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* বেস ফন্ট এবং ব্যাকগ্রাউন্ড সেট করার জন্য */
+        body {
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            transition: background-color 0.3s ease; /* থিম পরিবর্তনের জন্য স্মুথ ট্রানজিশন */
+        }
+        /* ডার্ক মোডের জন্য বডি স্টাইল */
+        .dark body {
+            background-color: #1a202c; /* ডার্ক ব্যাকগ্রাউন্ড */
+            color: #e2e8f0; /* ডার্ক টেক্সট কালার */
+        }
+        /* স্ক্রলবার স্টাইল করার জন্য */
+        #chatbox::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chatbox::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+        .dark #chatbox::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        #chatbox::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+        }
+        .dark #chatbox::-webkit-scrollbar-thumb {
+            background: #4a5568;
+        }
+        #chatbox::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .dark #chatbox::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* কাস্টম ড্রপডাউন মেনুর জন্য স্টাইল */
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%; /* হেডার এর নিচে দেখানোর জন্য */
+            z-index: 1000;
+            min-width: 12rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen text-gray-900 dark:text-gray-100">
+
+    <div class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col h-[90vh] my-4 transition-colors duration-300">
+        <!-- হেডার -->
+        <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 rounded-t-2xl shadow-md flex justify-between items-center relative">
+            <h1 id="appTitle" class="text-xl md:text-2xl font-bold text-center flex-grow" data-lang-key="appTitle">Chat with Gemini</h1>
+            <!-- সেটিংস মেনু (থ্রি ডট আইকন) -->
+            <div class="relative">
+                <button id="settingsButton" class="p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                </button>
+                <!-- ড্রপডাউন মেনু -->
+                <div id="settingsMenu" class="dropdown-menu hidden bg-white dark:bg-gray-700 rounded-lg shadow-lg py-2 mt-2 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 font-semibold" data-lang-key="themeLabel">Theme</div>
+                    <a href="#" id="lightTheme" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="lightTheme">Light</a>
+                    <a href="#" id="darkTheme" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="darkTheme">Dark</a>
+                    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 font-semibold" data-lang-key="languageLabel">Language</div>
+                    <a href="#" id="langBn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="langBn">Bengali</a>
+                    <a href="#" id="langEn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="langEn">English</a>
+                    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                    <a href="#" id="aboutOption" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="aboutOption">About</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- চ্যাটবক্স (যেখানে মেসেজ দেখা যাবে) -->
+        <main id="chatbox" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+            <!-- প্রাথমিক বার্তা -->
+            <div class="flex justify-start">
+                <div class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-xl max-w-lg" id="initialMessage">
+                    <p data-lang-key="initialMessage">Hello! I am Gemini. You can ask me anything.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- লোডিং ইন্ডিকেটর (লুকানো থাকবে) -->
+        <div id="loading-indicator" class="hidden p-4 flex items-center justify-start">
+            <div class="bg-gray-200 dark:bg-gray-700 p-3 rounded-xl flex items-center space-x-2">
+                <div class="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-pulse"></div>
+                <div class="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                <div class="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+            </div>
+        </div>
+
+        <!-- মেসেজ ইনপুট এবং সেন্ড বাটন -->
+        <footer class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-2xl transition-colors duration-300">
+            <div class="flex items-center space-x-2">
+                <input type="text" id="userInput" class="flex-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition" placeholder="Type your message here..." data-lang-key="inputPlaceholder">
+                <button id="sendButton" class="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 active:scale-95 transition-transform flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center relative">
+            <button id="closeAboutModal" class="absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100" data-lang-key="aboutTitle">About</h2>
+            <p class="text-gray-700 dark:text-gray-300">Design by MMH ANAS</p>
+            <p class="text-gray-700 dark:text-gray-300">Version 1.0.1</p>
+            <p class="text-gray-700 dark:text-gray-300">Gemini version 2.0 Flash</p>
+        </div>
+    </div>
+
+    <script>
+        // প্রয়োজনীয় HTML এলিমেন্টগুলো সিলেক্ট করা
+        const chatbox = document.getElementById('chatbox');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const lightThemeButton = document.getElementById('lightTheme');
+        const darkThemeButton = document.getElementById('darkTheme');
+        const langBnButton = document.getElementById('langBn');
+        const langEnButton = document.getElementById('langEn');
+        const aboutOption = document.getElementById('aboutOption');
+        const aboutModal = document.getElementById('aboutModal');
+        const closeAboutModalButton = document.getElementById('closeAboutModal');
+
+        // চ্যাট হিস্ট্রি সংরক্ষণের জন্য একটি অ্যারে
+        let chatHistory = [];
+
+        // অনুবাদ ডেটা
+        const translations = {
+            bn: {
+                appTitle: 'Gemini এর সাথে চ্যাট করুন',
+                initialMessage: 'হ্যালো! আমি Gemini। আপনি আমাকে যেকোনো প্রশ্ন করতে পারেন।',
+                inputPlaceholder: 'এখানে আপনার বার্তা লিখুন...',
+                themeLabel: 'থিম',
+                lightTheme: 'লাইট',
+                darkTheme: 'ডার্ক',
+                languageLabel: 'ভাষা',
+                langBn: 'বাংলা',
+                langEn: 'ইংলিশ',
+                aboutOption: 'সম্পর্কে',
+                aboutTitle: 'সম্পর্কে',
+                errorMessage: 'একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+                noResponse: 'দুঃখিত, আমি কোনো উত্তর খুঁজে পাইনি।'
+            },
+            en: {
+                appTitle: 'Chat with Gemini',
+                initialMessage: 'Hello! I am Gemini. You can ask me anything.',
+                inputPlaceholder: 'Type your message here...',
+                themeLabel: 'Theme',
+                lightTheme: 'Light',
+                darkTheme: 'Dark',
+                languageLabel: 'Language',
+                langBn: 'Bengali',
+                langEn: 'English',
+                aboutOption: 'About',
+                aboutTitle: 'About',
+                errorMessage: 'An error occurred. Please try again.',
+                noResponse: 'Sorry, I could not find a response.'
+            }
+        };
+
+        let currentLanguage = localStorage.getItem('appLanguage') || 'en'; // ডিফল্ট ভাষা ইংলিশ
+
+        // ভাষা সেট করার ফাংশন
+        const setLanguage = (lang) => {
+            currentLanguage = lang;
+            localStorage.setItem('appLanguage', lang);
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.dataset.langKey;
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                    if (element.id === 'userInput') { // ইনপুট প্লেসহোল্ডার আলাদাভাবে সেট করা
+                        element.placeholder = translations[currentLanguage][key];
+                    }
+                }
+            });
+            // প্রাথমিক বার্তা যদি লোড হওয়ার আগে যোগ হয়ে থাকে, তাহলে সেটা আপডেট করা
+            const initialMsgElement = document.getElementById('initialMessage').querySelector('p');
+            if (initialMsgElement) {
+                initialMsgElement.textContent = translations[currentLanguage].initialMessage;
+            }
+        };
+
+        // থিম টগল করার ফাংশন
+        const toggleTheme = (theme) => {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        };
+
+        // ব্যবহারকারীর মেসেজ পাঠানোর ফাংশন
+        const sendMessage = async () => {
+            const userMessage = userInput.value.trim();
+            if (userMessage === '') return; // খালি মেসেজ পাঠানো হবে না
+
+            // ব্যবহারকারীর মেসেজ চ্যাটবক্সে দেখানো
+            addMessageToChatbox(userMessage, 'user');
+            userInput.value = ''; // ইনপুট ফিল্ড খালি করা
+
+            // লোডিং ইন্ডিকেটর দেখানো
+            loadingIndicator.classList.remove('hidden');
+            scrollToBottom();
+
+            try {
+                // Gemini API কল করার জন্য প্রস্তুতি
+                chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // এখানে কোনো API Key দেওয়ার প্রয়োজন নেই
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                // API তে fetch request পাঠানো
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                // API থেকে পাওয়া উত্তর বের করা
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    
+                    const geminiResponse = result.candidates[0].content.parts[0].text;
+                    chatHistory.push({ role: "model", parts: [{ text: geminiResponse }] });
+                    
+                    // Gemini-এর উত্তর চ্যাটবক্সে দেখানো
+                    addMessageToChatbox(geminiResponse, 'gemini');
+                } else {
+                    // যদি কোনো উত্তর না পাওয়া যায়
+                    addMessageToChatbox(translations[currentLanguage].noResponse, 'gemini');
+                }
+
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                addMessageToChatbox(translations[currentLanguage].errorMessage, 'gemini');
+            } finally {
+                // লোডিং ইন্ডিকেটর লুকানো
+                loadingIndicator.classList.add('hidden');
+                scrollToBottom();
+            }
+        };
+
+        // চ্যাটবক্সে নতুন মেসেজ যোগ করার ফাংশন
+        const addMessageToChatbox = (message, sender) => {
+            const messageWrapper = document.createElement('div');
+            const messageElement = document.createElement('div');
+            
+            messageElement.innerHTML = message.replace(/\n/g, '<br>'); // Newlines to <br>
+            
+            // প্রেরকের উপর ভিত্তি করে স্টাইল সেট করা
+            if (sender === 'user') {
+                messageWrapper.className = 'flex justify-end';
+                messageElement.className = 'bg-blue-600 text-white p-3 rounded-xl max-w-lg';
+            } else {
+                messageWrapper.className = 'flex justify-start';
+                messageElement.className = 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-xl max-w-lg';
+            }
+            
+            messageWrapper.appendChild(messageElement);
+            chatbox.appendChild(messageWrapper);
+            scrollToBottom();
+        };
+
+        // চ্যাটবক্সের নিচে স্ক্রল করার ফাংশন
+        const scrollToBottom = () => {
+            chatbox.scrollTop = chatbox.scrollHeight;
+        };
+
+        // ইভেন্ট লিসেনার্স
+        sendButton.addEventListener('click', sendMessage);
+
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // ফর্ম সাবমিট হওয়া আটকানো
+                sendMessage();
+            }
+        });
+
+        // সেটিংস মেনু টগল করা
+        settingsButton.addEventListener('click', (event) => {
+            event.stopPropagation(); // ইভেন্ট প্রোপাগেশন বন্ধ করা যাতে ডকুমেন্ট ক্লিক ইভেন্ট মেনু বন্ধ না করে
+            settingsMenu.classList.toggle('hidden');
+        });
+
+        // থিম পরিবর্তনের জন্য ইভেন্ট লিসেনার
+        lightThemeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            toggleTheme('light');
+            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
+        });
+
+        darkThemeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            toggleTheme('dark');
+            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
+        });
+
+        // ভাষা পরিবর্তনের জন্য ইভেন্ট লিসেনার
+        langBnButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            setLanguage('bn');
+            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
+        });
+
+        langEnButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            setLanguage('en');
+            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
+        });
+
+        // এবাউট অপশনে ক্লিক করলে মডাল দেখানো
+        aboutOption.addEventListener('click', (event) => {
+            event.preventDefault();
+            aboutModal.classList.remove('hidden');
+            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
+        });
+
+        // এবাউট মডাল বন্ধ করা
+        closeAboutModalButton.addEventListener('click', () => {
+            aboutModal.classList.add('hidden');
+        });
+
+        // মডালের বাইরে ক্লিক করলে মডাল বন্ধ করা
+        aboutModal.addEventListener('click', (event) => {
+            if (event.target === aboutModal) {
+                aboutModal.classList.add('hidden');
+            }
+        });
+
+        // ডকুমেন্ট এর যেকোনো জায়গায় ক্লিক করলে সেটিংস মেনু বন্ধ করা
+        document.addEventListener('click', (event) => {
+            if (!settingsButton.contains(event.target) && !settingsMenu.contains(event.target)) {
+                settingsMenu.classList.add('hidden');
+            }
+        });
+
+        // পেজ লোড হওয়ার সময় থিম এবং ভাষা সেট করা
+        document.addEventListener('DOMContentLoaded', () => {
+            // থিম লোড করা
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                toggleTheme(savedTheme);
+            } else {
+                // সিস্টেম প্রেফারেন্স চেক করা যদি কোনো থিম সেভ না থাকে
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    toggleTheme('dark');
+                } else {
+                    toggleTheme('light');
+                }
+            }
+
+            // ভাষা লোড করা
+            setLanguage(currentLanguage);
+        });
+    </script>
+</body>
+</html>
+
