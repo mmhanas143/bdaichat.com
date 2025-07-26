@@ -75,7 +75,10 @@
     <div class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col h-[90vh] my-4 transition-colors duration-300">
         <!-- হেডার -->
         <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 rounded-t-2xl shadow-md flex justify-between items-center relative">
-            <h1 id="appTitle" class="text-xl md:text-2xl font-bold text-center flex-grow" data-lang-key="appTitle">Chat with Gemini</h1>
+            <div class="flex items-center space-x-3">
+                <!-- App Title - Logo removed -->
+                <h1 id="appTitle" class="text-xl md:text-2xl font-bold" data-lang-key="appTitle">Chat with Gemini</h1>
+            </div>
             <!-- সেটিংস মেনু (থ্রি ডট আইকন) -->
             <div class="relative">
                 <button id="settingsButton" class="p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -92,6 +95,9 @@
                     <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 font-semibold" data-lang-key="languageLabel">Language</div>
                     <a href="#" id="langBn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="langBn">Bengali</a>
                     <a href="#" id="langEn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="langEn">English</a>
+                    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                    <!-- New App Download Option -->
+                    <a href="#" id="appDownloadOption" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="appDownloadOption">App Download</a>
                     <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
                     <a href="#" id="aboutOption" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" data-lang-key="aboutOption">About</a>
                 </div>
@@ -141,6 +147,18 @@
         </div>
     </div>
 
+    <!-- App Download Info Modal -->
+    <div id="appDownloadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center relative">
+            <button id="closeAppDownloadModal" class="absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100" data-lang-key="appDownloadTitle">App Download</h2>
+            <p class="text-gray-700 dark:text-gray-300" data-lang-key="appDownloadMessage">This is a web application. You can install it as a Progressive Web App (PWA) on your mobile device for an app-like experience.</p>
+            <p class="text-gray-700 dark:text-gray-300 mt-2" data-lang-key="pwaInstructions">Look for "Add to Home Screen" or "Install App" option in your browser menu.</p>
+        </div>
+    </div>
+
     <script>
         // প্রয়োজনীয় HTML এলিমেন্টগুলো সিলেক্ট করা
         const chatbox = document.getElementById('chatbox');
@@ -153,9 +171,12 @@
         const darkThemeButton = document.getElementById('darkTheme');
         const langBnButton = document.getElementById('langBn');
         const langEnButton = document.getElementById('langEn');
+        const appDownloadOption = document.getElementById('appDownloadOption'); // New element
         const aboutOption = document.getElementById('aboutOption');
         const aboutModal = document.getElementById('aboutModal');
         const closeAboutModalButton = document.getElementById('closeAboutModal');
+        const appDownloadModal = document.getElementById('appDownloadModal'); // New element
+        const closeAppDownloadModalButton = document.getElementById('closeAppDownloadModal'); // New element
 
         // চ্যাট হিস্ট্রি সংরক্ষণের জন্য একটি অ্যারে
         let chatHistory = [];
@@ -163,7 +184,7 @@
         // অনুবাদ ডেটা
         const translations = {
             bn: {
-                appTitle: 'Gemini এর সাথে চ্যাট করুন',
+                appTitle: 'Gemini চ্যাট অ্যাপ',
                 initialMessage: 'হ্যালো! আমি Gemini। আপনি আমাকে যেকোনো প্রশ্ন করতে পারেন।',
                 inputPlaceholder: 'এখানে আপনার বার্তা লিখুন...',
                 themeLabel: 'থিম',
@@ -172,6 +193,10 @@
                 languageLabel: 'ভাষা',
                 langBn: 'বাংলা',
                 langEn: 'ইংলিশ',
+                appDownloadOption: 'অ্যাপ ডাউনলোড', // New translation
+                appDownloadTitle: 'অ্যাপ ডাউনলোড', // New translation
+                appDownloadMessage: 'এটি একটি ওয়েব অ্যাপ্লিকেশন। আপনি এটিকে আপনার মোবাইল ডিভাইসে একটি অ্যাপের মতো (প্রোগ্রেসিভ ওয়েব অ্যাপ - PWA) ইনস্টল করতে পারেন।', // New translation
+                pwaInstructions: 'আপনার ব্রাউজার মেনুতে "হোম স্ক্রিনে যোগ করুন" অথবা "অ্যাপ ইনস্টল করুন" অপশনটি খুঁজুন।', // New translation
                 aboutOption: 'সম্পর্কে',
                 aboutTitle: 'সম্পর্কে',
                 errorMessage: 'একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
@@ -187,6 +212,10 @@
                 languageLabel: 'Language',
                 langBn: 'Bengali',
                 langEn: 'English',
+                appDownloadOption: 'App Download', // New translation
+                appDownloadTitle: 'App Download', // New translation
+                appDownloadMessage: 'This is a web application. You can install it as a Progressive Web App (PWA) on your mobile device for an app-like experience.', // New translation
+                pwaInstructions: 'Look for "Add to Home Screen" or "Install App" option in your browser menu.', // New translation
                 aboutOption: 'About',
                 aboutTitle: 'About',
                 errorMessage: 'An error occurred. Please try again.',
@@ -325,58 +354,7 @@
         settingsButton.addEventListener('click', (event) => {
             event.stopPropagation(); // ইভেন্ট প্রোপাগেশন বন্ধ করা যাতে ডকুমেন্ট ক্লিক ইভেন্ট মেনু বন্ধ না করে
             settingsMenu.classList.toggle('hidden');
-        });
-
-        // থিম পরিবর্তনের জন্য ইভেন্ট লিসেনার
-        lightThemeButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            toggleTheme('light');
-            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
-        });
-
-        darkThemeButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            toggleTheme('dark');
-            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
-        });
-
-        // ভাষা পরিবর্তনের জন্য ইভেন্ট লিসেনার
-        langBnButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            setLanguage('bn');
-            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
-        });
-
-        langEnButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            setLanguage('en');
-            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
-        });
-
-        // এবাউট অপশনে ক্লিক করলে মডাল দেখানো
-        aboutOption.addEventListener('click', (event) => {
-            event.preventDefault();
-            aboutModal.classList.remove('hidden');
-            settingsMenu.classList.add('hidden'); // মেনু বন্ধ করা
-        });
-
-        // এবাউট মডাল বন্ধ করা
-        closeAboutModalButton.addEventListener('click', () => {
-            aboutModal.classList.add('hidden');
-        });
-
-        // মডালের বাইরে ক্লিক করলে মডাল বন্ধ করা
-        aboutModal.addEventListener('click', (event) => {
-            if (event.target === aboutModal) {
-                aboutModal.classList.add('hidden');
-            }
-        });
-
-        // ডকুমেন্ট এর যেকোনো জায়গায় ক্লিক করলে সেটিংস মেনু বন্ধ করা
-        document.addEventListener('click', (event) => {
-            if (!settingsButton.contains(event.target) && !settingsMenu.contains(event.target)) {
-                settingsMenu.classList.add('hidden');
-            }
+               }
         });
 
         // পেজ লোড হওয়ার সময় থিম এবং ভাষা সেট করা
@@ -401,3 +379,4 @@
 </body>
 </html>
 
+      
